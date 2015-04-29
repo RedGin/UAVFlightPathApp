@@ -1,6 +1,6 @@
 package com.edu.erau.uavflightpath;
 
-import android.app.FragmentTransaction;
+import android.content.Intent;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -12,13 +12,10 @@ public class MainActivity extends ActionBarActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        Intent intent = new Intent(this, UAVFlightMap.class);
+        startActivity(intent);
 
-
-        if(savedInstanceState == null){
-            FragmentTransaction ft = getFragmentManager().beginTransaction();
-
-            ft.add(R.id.fragment_container, new UAVFlightMap(), "UAVFlightMap");
-        }
     }
 
     @Override

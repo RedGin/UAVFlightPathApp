@@ -18,14 +18,17 @@ public class UAVFlightMap extends FragmentActivity{
     public final static String EXTRA_MESSAGE = "com.edu.erau.MESSAGE";
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
     private Marker[] markers = new Marker[1000];
-    private double[] velcoity = new double[1000];
-    private int[] elevation = new int[1000];
+    private int[] velcoity = new int[1000];
+    private int[] altitude = new int[1000];
     private int markerCount = 0;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_uavflight_map);
         setUpMapIfNeeded();
+
+
 
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
@@ -36,14 +39,15 @@ public class UAVFlightMap extends FragmentActivity{
                         .title("Waypoint #" + markerCount)
                         .snippet("Latitude: " + latLng.latitude + "Longitude: " + latLng.longitude));
                 velcoity[markerCount] = 0;
-                elevation[markerCount] = 0;
+                altitude[markerCount] = 0;
                 if (markerCount > 0) {
                     PolylineOptions pO = new PolylineOptions().width(2).color(Color.BLACK).add(markers[markerCount].getPosition(), markers[markerCount - 1].getPosition());
                     mMap.addPolyline(pO);
                     velcoity[markerCount] = velcoity[markerCount-1];
-                    elevation[markerCount] = elevation[markerCount-1];
+                    altitude[markerCount] = altitude[markerCount-1];
                 }
-
+                waypointDB waypointHandler = new waypointDB(UAVFlightMap.this, null, null, 1);
+                waypoint Waypoint = new waypoint(markers[markerCount].getTitle(), latLng.latitude, latLng.longitude, altitude[markerCount], velcoity[markerCount]);
                 markerCount++;
             }
         });
@@ -62,25 +66,30 @@ public class UAVFlightMap extends FragmentActivity{
                         .position(latLng)
                         .draggable(false)
                         .title("Waypoint #" + markerCount)
-                        .snippet("Latitude: " + latLng.latitude + "Longitude: " + latLng.longitude));
+                        .snippet("Latitude: " + latLng.latitude
+                                +"Longitude: " + latLng.longitude
+                        ));
                 velcoity[markerCount] = 0;
-                elevation[markerCount] = 0;
+                altitude[markerCount] = 0;
                 if (markerCount > 0) {
                     PolylineOptions pO = new PolylineOptions().width(2).color(Color.BLACK).add(markers[markerCount].getPosition(), markers[markerCount - 1].getPosition());
                     mMap.addPolyline(pO);
                     velcoity[markerCount] = velcoity[markerCount-1];
-                    elevation[markerCount] = elevation[markerCount-1];
+                    altitude[markerCount] = altitude[markerCount-1];
                 }
+                markers[markerCount].setSnippet(markers[markerCount].getSnippet() + "Altitude: "+ altitude[markerCount] + "Velocity: " + velcoity[markerCount]);
+                waypointDB waypointHandler = new waypointDB(UAVFlightMap.this, null, null, 1);
+                waypoint Waypoint = new waypoint(markers[markerCount].getTitle(), latLng.latitude, latLng.longitude, altitude[markerCount], velcoity[markerCount]);
                 markerCount++;
 
                 Intent intent = new Intent(UAVFlightMap.this, waypointDisplay.class);
-                String message = null;
+                String message = "";
                 for (int i=0; i<markerCount; i++){
                     message = message + "Waypoint #"+ i + ":"
                             + markers[i].getPosition().latitude + ":"
                             + markers[i].getPosition().longitude + ":"
                             + velcoity[i] + ":"
-                            + elevation[i]+ ";";
+                            + altitude[i]+ ";";
                 }
                 intent.putExtra(EXTRA_MESSAGE, message);
                 startActivity(intent);
@@ -92,6 +101,7 @@ public class UAVFlightMap extends FragmentActivity{
     protected void onResume() {
         super.onResume();
         setUpMapIfNeeded();
+
     }
 
     /**
@@ -130,5 +140,9 @@ public class UAVFlightMap extends FragmentActivity{
      */
     private void setUpMap() {
        // mMap.addMarker(new MarkerOptions().position(new LatLng(0, 0)).title("Marker"));
+    }
+
+    private void updatemapmarkers(){
+
     }
 }
