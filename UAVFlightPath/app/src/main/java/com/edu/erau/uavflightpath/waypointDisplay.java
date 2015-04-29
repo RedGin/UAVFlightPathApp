@@ -2,7 +2,10 @@ package com.edu.erau.uavflightpath;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.os.Environment;
 import android.text.InputType;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -12,7 +15,14 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
+
+import com.opencsv.CSVWriter;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.List;
 
 
 public class waypointDisplay extends Activity {
@@ -21,12 +31,15 @@ public class waypointDisplay extends Activity {
     ArrayList list;
     Spinner spin;
     ArrayAdapter<String> adapter;
+    waypointDB waypointHandler;
     int tailcount = 0;
+    waypoint way;
+    String testing;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_waypoint_display);
-        waypointDB waypointHandler = new waypointDB(waypointDisplay.this, null, null, 1);
+        waypointHandler = new waypointDB(waypointDisplay.this, null, null, 3);
         Intent intent = getIntent();
 
         String message = intent.getStringExtra(UAVFlightMap.EXTRA_MESSAGE);
@@ -39,17 +52,19 @@ public class waypointDisplay extends Activity {
         spin = (Spinner) findViewById(R.id.waypointSpinner);
         list = new ArrayList();
         final String[][] waypointinfo = new String[firstparse.length][4];
+        int i = 0;
+        testing = "Waypoint #" + i;
+        way = waypointHandler.findWaypoint(testing);
+        while(i < waypointHandler.tableLength()){
+            if (way != null) {
+                list.add(i, way.get_waypointName());
+            }
+            testing = "Waypoint #" + i;
+            way = waypointHandler.findWaypoint(testing);
+            i++;
 
-        for(int i = 0; i<firstparse.length; i++){
-            String[] secondparse = firstparse[i].split(":");
-            waypoints[i] = secondparse[0];
-            list.add(i,waypoints[i]);
-            waypointinfo[i][0] = secondparse[1];
-            waypointinfo[i][1] = secondparse[2];
-            waypointinfo[i][2] = secondparse[3];
-            waypointinfo[i][3] = secondparse[4];
         }
-        tailcount = waypoints.length;
+
 
         final EditText velocity = (EditText) findViewById(R.id.velocityText);
         final EditText altitude = (EditText) findViewById(R.id.altitudeText);
@@ -70,10 +85,12 @@ public class waypointDisplay extends Activity {
         spin.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                latitude.setText(waypointinfo[position][0]);
-                longitude.setText(waypointinfo[position][1]);
-                velocity.setText(waypointinfo[position][2]);
-                altitude.setText(waypointinfo[position][3]);
+                testing = "Waypoint #" + position;
+                way = waypointHandler.findWaypoint(testing);
+                latitude.setText(Double.toString(way.get_latitude()));
+                longitude.setText(Double.toString(way.get_longitude()));
+                velocity.setText(Integer.toString(way.get_velocity()));
+                altitude.setText(Integer.toString(way.get_altitude()));
                 pos = position;
             }
 
@@ -87,13 +104,20 @@ public class waypointDisplay extends Activity {
         Button cancel = (Button) findViewById(R.id.cancelButton);
         Button delete = (Button) findViewById(R.id.deleteButton);
         Button returntoMap = (Button) findViewById(R.id.returnButton);
+        final Button export = (Button) findViewById(R.id.export);
+        Button clearall = (Button) findViewById(R.id.clearPath);
 
         save.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if(tailcount>0) {
-                    waypointinfo[pos][2] = velocity.getText().toString();
-                    waypointinfo[pos][3] = altitude.getText().toString();
+                    testing = "Waypoint #" + pos;
+                    way = waypointHandler.findWaypoint(testing);
+                    way.set_velocity(Integer.parseInt(velocity.getText().toString()));
+                    way.set_altitude(Integer.parseInt(altitude.getText().toString()));
+                    way.set_latitude(Double.parseDouble(latitude.getText().toString()));
+                    way.set_longitude(Double.parseDouble(longitude.getText().toString()));
+                    waypointHandler.update(way);
                 }
             }
         });
@@ -102,8 +126,12 @@ public class waypointDisplay extends Activity {
             @Override
             public void onClick(View v) {
                 if(tailcount>0) {
-                    velocity.setText(waypointinfo[pos][2].toString());
-                    altitude.setText(waypointinfo[pos][3].toString());
+                    testing = "Waypoint #" + pos;
+                    way = waypointHandler.findWaypoint(testing);
+                    latitude.setText(Double.toString(way.get_latitude()));
+                    longitude.setText(Double.toString(way.get_longitude()));
+                    velocity.setText(Integer.toString(way.get_velocity()));
+                    altitude.setText(Integer.toString(way.get_altitude()));
                 }
             }
         });
@@ -113,39 +141,30 @@ public class waypointDisplay extends Activity {
         delete.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                //deletes the selected waypoint by setting the variables to null
-
-
+                testing = "Waypoint #" + pos;
+                way = waypointHandler.findWaypoint(testing);
+                 waypointHandler.deleteWaypoint(way.get_waypointName());
                 //update the position of the arrays to account for the deleted waypoint
-                if (tailcount > 0) {
-                    for (int i = pos; i < waypoints.length - 1; i++) {
-                        waypoints[i] = "Waypoint #" + (i);
-                        waypointinfo[i][0] = waypointinfo[i + 1][0];
-                        waypointinfo[i][1] = waypointinfo[i + 1][1];
-                        waypointinfo[i][2] = waypointinfo[i + 1][2];
-                        waypointinfo[i][3] = waypointinfo[i + 1][3];
-                    }
-                    tailcount = tailcount - 1;
-                    waypoints[tailcount] = null;
-                    waypointinfo[tailcount][0] = null;
-                    waypointinfo[tailcount][1] = null;
-                    waypointinfo[tailcount][2] = null;
-                    waypointinfo[tailcount][3] = null;
 
-                    //updates the spinner
-                    list.clear();
-                    for (int i = 0; i < tailcount; i++) {
-                        list.add(i, waypoints[i]);
+                //updates the spinner
+                list.clear();
+                int i = 0;
+                testing = "Waypoint #" + i;
+                way = waypointHandler.findWaypoint(testing);
+                while(i < waypointHandler.tableLength()){
+                    if (way != null) {
+                        list.add(i, way.get_waypointName());
                     }
+                    testing = "Waypoint #" + i;
+                    way = waypointHandler.findWaypoint(testing);
+                    i++;
 
-                    adapter.notifyDataSetChanged();
-                    latitude.setText(waypointinfo[pos][0]);
-                    longitude.setText(waypointinfo[pos][1]);
-                    velocity.setText(waypointinfo[pos][2]);
-                    altitude.setText(waypointinfo[pos][3]);
                 }
-            }
+
+                 adapter.notifyDataSetChanged();
+
+                }
+
         });
 
         returntoMap.setOnClickListener(new View.OnClickListener() {
@@ -154,7 +173,57 @@ public class waypointDisplay extends Activity {
                 finish();
             }
         });
+
+        clearall.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                waypointHandler.dropTable();
+
+            }
+        });
+
+        export.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                /**
+                 * exporting as a csv file
+                 * heavy usage from
+                 * http://paragchauhan2010.blogspot.com/2012/08/database-table-export-to-csv-in-android.html
+                 * and
+                 * http://viralpatel.net/blogs/java-read-write-csv-file/
+                 */
+                //accesses external storage
+                File csv = new File(Environment.getExternalStorageDirectory(),"");
+
+
+                //check if the directory exist or not and if not creates one
+                if (!csv.exists()){
+                    csv.mkdirs();
+                }
+
+                //specified file name
+                File file = new File( csv, "UAVPath.csv");
+                try{
+                    //
+                    CSVWriter writer = new CSVWriter(new FileWriter(file));
+                    SQLiteDatabase db = waypointHandler.getReadableDatabase();
+                    Cursor curCSV = db.rawQuery("SELECT * FROM waypoint",null);
+                    writer.writeNext(curCSV.getColumnNames());
+                    while(curCSV.moveToNext()){
+                        String arrString[] = {curCSV.getString(0),curCSV.getString(1),curCSV.getString(2),curCSV.getString(3),curCSV.getString(4)};
+                        writer.writeNext(arrString);
+                    }
+                    writer.close();
+                    curCSV.close();
+                }catch(Exception e) {
+
+                }
+
+            }
+        });
     }
+
+
 
 
     @Override

@@ -16,19 +16,19 @@ import com.google.android.gms.maps.model.PolylineOptions;
 public class UAVFlightMap extends FragmentActivity{
 
     public final static String EXTRA_MESSAGE = "com.edu.erau.MESSAGE";
-    private GoogleMap mMap; // Might be null if Google Play services APK is not available.
+    GoogleMap mMap; // Might be null if Google Play services APK is not available.
     private Marker[] markers = new Marker[1000];
     private int[] velcoity = new int[1000];
     private int[] altitude = new int[1000];
     private int markerCount = 0;
+    int it;
+    private waypointDB waypointHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_uavflight_map);
         setUpMapIfNeeded();
-
-
 
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
@@ -46,9 +46,10 @@ public class UAVFlightMap extends FragmentActivity{
                     velcoity[markerCount] = velcoity[markerCount-1];
                     altitude[markerCount] = altitude[markerCount-1];
                 }
-                waypointDB waypointHandler = new waypointDB(UAVFlightMap.this, null, null, 1);
+                waypointHandler = new waypointDB(UAVFlightMap.this, null, null, 3);
                 waypoint Waypoint = new waypoint(markers[markerCount].getTitle(), latLng.latitude, latLng.longitude, altitude[markerCount], velcoity[markerCount]);
                 waypointHandler.addWaypoint(Waypoint);
+                System.out.println(markers[markerCount].getTitle());
                 markerCount++;
             }
         });
@@ -79,7 +80,7 @@ public class UAVFlightMap extends FragmentActivity{
                     altitude[markerCount] = altitude[markerCount-1];
                 }
                 markers[markerCount].setSnippet(markers[markerCount].getSnippet() + "Altitude: "+ altitude[markerCount] + "Velocity: " + velcoity[markerCount]);
-                waypointDB waypointHandler = new waypointDB(UAVFlightMap.this, null, null, 1);
+                waypointHandler = new waypointDB(UAVFlightMap.this, null, null, 3);
                 waypoint Waypoint = new waypoint(markers[markerCount].getTitle(), latLng.latitude, latLng.longitude, altitude[markerCount], velcoity[markerCount]);
                 waypointHandler.addWaypoint(Waypoint);
 
@@ -145,7 +146,5 @@ public class UAVFlightMap extends FragmentActivity{
        // mMap.addMarker(new MarkerOptions().position(new LatLng(0, 0)).title("Marker"));
     }
 
-    private void updatemapmarkers(){
 
-    }
 }
