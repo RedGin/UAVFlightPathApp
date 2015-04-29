@@ -48,6 +48,7 @@ public class UAVFlightMap extends FragmentActivity{
                 }
                 waypointDB waypointHandler = new waypointDB(UAVFlightMap.this, null, null, 1);
                 waypoint Waypoint = new waypoint(markers[markerCount].getTitle(), latLng.latitude, latLng.longitude, altitude[markerCount], velcoity[markerCount]);
+                waypointHandler.addWaypoint(Waypoint);
                 markerCount++;
             }
         });
@@ -80,6 +81,8 @@ public class UAVFlightMap extends FragmentActivity{
                 markers[markerCount].setSnippet(markers[markerCount].getSnippet() + "Altitude: "+ altitude[markerCount] + "Velocity: " + velcoity[markerCount]);
                 waypointDB waypointHandler = new waypointDB(UAVFlightMap.this, null, null, 1);
                 waypoint Waypoint = new waypoint(markers[markerCount].getTitle(), latLng.latitude, latLng.longitude, altitude[markerCount], velcoity[markerCount]);
+                waypointHandler.addWaypoint(Waypoint);
+
                 markerCount++;
 
                 Intent intent = new Intent(UAVFlightMap.this, waypointDisplay.class);

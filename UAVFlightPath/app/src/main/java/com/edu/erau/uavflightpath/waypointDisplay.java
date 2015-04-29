@@ -26,7 +26,7 @@ public class waypointDisplay extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_waypoint_display);
-
+        waypointDB waypointHandler = new waypointDB(waypointDisplay.this, null, null, 1);
         Intent intent = getIntent();
 
         String message = intent.getStringExtra(UAVFlightMap.EXTRA_MESSAGE);
@@ -59,7 +59,6 @@ public class waypointDisplay extends Activity {
         latitude.setInputType(InputType.TYPE_NUMBER_FLAG_DECIMAL);
         velocity.setInputType(InputType.TYPE_CLASS_NUMBER);
         altitude.setInputType(InputType.TYPE_CLASS_NUMBER);
-
 
 
 

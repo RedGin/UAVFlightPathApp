@@ -15,7 +15,6 @@ public class waypointDB extends SQLiteOpenHelper{
     private static final int DATABASE_VERSION = 1;
     private static final String DATABASE_NAME = "waypointDB.db";
     private static final String TABLE_WAYPOINT = "waypoint";
-
     public static final String COLUMN_WAYPOINTNAME = "waypointname";
     public static final String COLUMN_LATITUDE = "latitude";
     public static final String COLUMN_LONGITUDE = "longitude";
@@ -29,11 +28,11 @@ public class waypointDB extends SQLiteOpenHelper{
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        String CREATE_PRODUCTS_TABLE = "CREATE TABLE " +
+        String CREATE_WAYPOINTS_TABLE = "CREATE TABLE " +
                 TABLE_WAYPOINT + "("
-                + COLUMN_WAYPOINTNAME + " WAYPOINT NAME PRIMARY KEY," + COLUMN_LATITUDE
-                + " DOUBLE," + COLUMN_LONGITUDE + " DOUBLE" + COLUMN_ALTITUDE + " INTEGER,"+ COLUMN_VELCOITY+ " INTEGER" + ")";
-        db.execSQL(CREATE_PRODUCTS_TABLE);
+                + COLUMN_WAYPOINTNAME + " TEXT PRIMARY KEY," + COLUMN_LATITUDE
+                + " DOUBLE," + COLUMN_LONGITUDE + " DOUBLE," + COLUMN_ALTITUDE + " INTEGER,"+ COLUMN_VELCOITY+ " INTEGER" + ")";
+        db.execSQL(CREATE_WAYPOINTS_TABLE);
     }
 
     @Override
